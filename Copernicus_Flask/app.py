@@ -1,36 +1,33 @@
+#API KEY :
+# ads.atmosphere.copernicus.eu (Atmosphere) : 5729:f5324f2d-ebed-4932-b892-dea8bca853f3
+# cds.climate.copernicus.eu (Climate) : 138730:2ca5cd16-2d91-4c9c-995d-3735c28863e7 
+
 from flask import Flask
 from flask import request
 import datetime
 import cdsapi
 from zipfile import ZipFile
 
-from ncplot import view
+app = Flask(__name__)
 
-def extractFiles():
+def extractFiles(): # Extrait tous les fichiers en .nc et .grib dans le download.zip
     print("EXTRACT FILES")
     with ZipFile('download.zip', 'r') as zipObj:
         listOfFileNames = zipObj.namelist()
         for fileName in listOfFileNames:
-            # Check filename endswith csv
             if fileName.endswith('.nc') or fileName.endswith('.grib'):
-                # Extract a single file from zip
                 zipObj.extract(fileName, 'extracted_files')
-
-app = Flask(__name__)
 
 @app.route("/")
 def index():
     return datetime.datetime.now().strftime("%H:%M:%S")
     
-
 @app.route("/download")
 def download():
     requestType = request.args.get('request', default='defaultRequest',type=str)
     day = request.args.get('day', default='01',type=str)
     month = request.args.get('month', default='01',type=str)
     year = request.args.get('year', default='01',type=str)
-    #connexion a l'api de copernicus
-    #c = cdsapi.Client(url='https://ads.atmosphere.copernicus.eu/api/v2', key='5729:f5324f2d-ebed-4932-b892-dea8bca853f3')   # <---- renseigner sa propre clé API
     if requestType == 'aerosol':
         c = cdsapi.Client(url='https://cds.climate.copernicus.eu/api/v2', key='138730:2ca5cd16-2d91-4c9c-995d-3735c28863e7')   # <---- renseigner sa propre clé API
         c.retrieve(
@@ -47,7 +44,7 @@ def download():
                 'orbit': 'descending',
                 'format': 'zip',
             },
-            'download.zip')
+            'download.zip') 
         extractFiles()
     elif requestType == 'nox':
         print("TODO")
@@ -71,10 +68,6 @@ def test():
         },
         'download.nc')
     return "Téléchargement terminé"
-
-@app.route("/convert")
-def convert():
-    print("TODO")
 
 
 if __name__ == "__main__":
