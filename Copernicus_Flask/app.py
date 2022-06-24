@@ -13,11 +13,11 @@ app = Flask(__name__)
 
 def extractFiles(): # Extrait tous les fichiers netcdf de l'archive download.zip
     print("EXTRACT FILES")
-    with ZipFile('download.zip', 'r') as zipObj:
+    with ZipFile('download.zip', 'r') as zipObj: # download.zip est le fichier où se trouve les .nc
         listOfFileNames = zipObj.namelist()
         for fileName in listOfFileNames:
-            if fileName.endswith('.nc'):
-                zipObj.extract(fileName, '../images')
+            if fileName.endswith('.nc'): # Uniquement les fichiers .nc
+                zipObj.extract(fileName, '../images') #On les extrait dans le dossier images
 
 @app.route("/")
 def index():
@@ -71,21 +71,22 @@ def test():
         'download.nc')
     return "Téléchargement terminé"
 
-
+#Nécessaire de le modifier pour qu'il soit utilisable avec les autres fichiers NETCDF
 @app.route("/convert")
 def convert():
-    #Importer les packages
+    # Importer les packages
     import xarray as xr 
     import rioxarray as rio
-    #Récupérer le fichier .nc
+    # Récupérer le fichier .nc
     nc_file = xr.open_dataset('../images/aerosol.nc')
     print(nc_file)
-    #Prendre la variable de notre choix
+    # Prendre la variable de notre choix
     data_variable = nc_file['DAOD550']
-    #Définir les variables spaciales
+    # Définir les variables spaciales
     data_variable = data_variable.rio.set_spatial_dims(x_dim='longitude', y_dim='latitude')
-    #Définir le CRS
+    # Définir le CRS
     data_variable.rio.write_crs("epsg:4326", inplace=True)
+    # Créer le .tiff
     data_variable.rio.to_raster(r"../images/aerosol.tiff")
 
     return "convert success"
