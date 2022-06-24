@@ -46,14 +46,38 @@ def download():
                 'format': 'zip',
             },
             'download.zip') 
-        extractFiles()
-        os.remove('download.zip')
     elif requestType == 'nox':
-        print("TODO")
+        c = cdsapi.Client(url='https://ads.atmosphere.copernicus.eu/api/v2', key='5729:f5324f2d-ebed-4932-b892-dea8bca853f3')   # <---- renseigner sa propre clé APIs
+        c.retrieve(
+        'cams-global-emission-inventories',
+        {
+            'version': 'latest',
+            'format': 'zip',
+            'variable': 'nitrogen_oxides',
+            'source': 'aviation',
+            'year': year,
+        },
+        'download.zip')
     elif requestType == 'melting': 
-        print("TODO")
+        c = cdsapi.Client(url='https://cds.climate.copernicus.eu/api/v2', key='138730:2ca5cd16-2d91-4c9c-995d-3735c28863e7')   # <---- renseigner sa propre clé API
+        c.retrieve(
+        'satellite-sea-ice-concentration',
+        {
+            'origin': 'eumetsat_osi_saf',
+            'region': 'northern_hemisphere',
+            'cdr_type': 'icdr',
+            'year': year,
+            'month': month,
+            'day': day,
+            'version': 'v2',
+            'variable': 'all',
+            'format': 'zip',
+        },
+        'download.zip')
     else:
         return "ERROR ON REQUEST"
+    extractFiles()
+    os.remove('download.zip')
     return "Download finished"
     
 
@@ -71,7 +95,9 @@ def test():
         'download.nc')
     return "Téléchargement terminé"
 
-#Nécessaire de le modifier pour qu'il soit utilisable avec les autres fichiers NETCDF
+
+# Convertie uniquement l'aerosol
+# Nécessaire de le modifier pour qu'il soit utilisable avec les autres fichiers NETCDF
 @app.route("/convert")
 def convert():
     # Importer les packages
