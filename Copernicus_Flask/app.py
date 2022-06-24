@@ -78,17 +78,24 @@ def convert():
     import xarray as xr 
     import rioxarray as rio
     #Récupérer le fichier .nc
-    nc_file = xr.open_dataset('aerosol.nc')
+    nc_file = xr.open_dataset('../images/aerosol.nc')
     print(nc_file)
     #Prendre la variable de notre choix
-    bT = nc_file['DAOD550']
+    data_variable = nc_file['DAOD550']
     #Définir les variables spaciales
-    bT = bT.rio.set_spatial_dims(x_dim='longitude', y_dim='latitude')
-    #Définir le CRS (couleurs)
-    bT.rio.write_crs("epsg:4326", inplace=True)
-    bT.rio.to_raster(r"aerosol.tiff")
+    data_variable = data_variable.rio.set_spatial_dims(x_dim='longitude', y_dim='latitude')
+    #Définir le CRS
+    data_variable.rio.write_crs("epsg:4326", inplace=True)
+    data_variable.rio.to_raster(r"../images/aerosol.tiff")
 
     return "convert success"
 
 if __name__ == "__main__":
     app.run()
+
+
+@app.after_request
+def add_header(response):
+    #permet de pouvoir faire des requetes http depuis un site web(Cross-origin resource sharing)
+    response.headers['Access-Control-Allow-Origin'] = '*' 
+    return response
