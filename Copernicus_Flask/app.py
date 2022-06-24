@@ -7,6 +7,7 @@ from flask import request
 import datetime
 import cdsapi
 from zipfile import ZipFile
+import os
 
 app = Flask(__name__)
 
@@ -15,8 +16,8 @@ def extractFiles(): # Extrait tous les fichiers en .nc et .grib dans le download
     with ZipFile('download.zip', 'r') as zipObj:
         listOfFileNames = zipObj.namelist()
         for fileName in listOfFileNames:
-            if fileName.endswith('.nc') or fileName.endswith('.grib'):
-                zipObj.extract(fileName, 'extracted_files')
+            if fileName.endswith('.nc'):
+                zipObj.extract(fileName, '../images')
 
 @app.route("/")
 def index():
@@ -46,6 +47,7 @@ def download():
             },
             'download.zip') 
         extractFiles()
+        os.remove('download.zip')
     elif requestType == 'nox':
         print("TODO")
     elif requestType == 'melting': 
@@ -69,6 +71,24 @@ def test():
         'download.nc')
     return "Téléchargement terminé"
 
+
+@app.route("/convert")
+def convert():
+    #Importer les packages
+    import xarray as xr 
+    import rioxarray as rio
+    #Récupérer le fichier .nc
+    nc_file = xr.open_dataset('aerosol.nc')
+    print(nc_file)
+    #Prendre la variable de notre choix
+    bT = nc_file['DAOD550']
+    #Définir les variables spaciales
+    bT = bT.rio.set_spatial_dims(x_dim='longitude', y_dim='latitude')
+    #Définir le CRS (couleurs)
+    bT.rio.write_crs("epsg:4326", inplace=True)
+    bT.rio.to_raster(r"aerosol.tiff")
+
+    return "convert success"
 
 if __name__ == "__main__":
     app.run()
