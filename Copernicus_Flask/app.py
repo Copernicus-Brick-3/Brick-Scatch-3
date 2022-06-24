@@ -11,7 +11,7 @@ import os
 
 app = Flask(__name__)
 
-def extractFiles(): # Extrait tous les fichiers en .nc et .grib dans le download.zip
+def extractFiles(): # Extrait tous les fichiers netcdf de l'archive download.zip
     print("EXTRACT FILES")
     with ZipFile('download.zip', 'r') as zipObj:
         listOfFileNames = zipObj.namelist()
